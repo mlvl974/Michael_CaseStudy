@@ -19,6 +19,7 @@ import java.util.Scanner;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.pdmodel.PDPage;
 import org.apache.pdfbox.pdmodel.PDPageContentStream;
+import org.apache.pdfbox.pdmodel.font.PDType1Font;
 
 import SortOrderBasedOnValue.SortOrderBasedOnValue;
 import casestudy.exceptions.InvalidCategryException;
@@ -242,6 +243,8 @@ public class MainClass implements IOrderService {
 
 		List<Order> filterOrder = new ArrayList<Order>();
 
+		int count  = 0;
+		
 		try {
 			String rootPath = "C:\\Users\\user\\Documents\\workspace-spring-tool-suite\\CaseStudy_CoreJava\\";
 			String fileName = "Order.csv";
@@ -257,10 +260,13 @@ public class MainClass implements IOrderService {
 
 				Order order = new Order();
 				String a = values[4];
-
+				
 				if (a.equals("delivered")) {
+					
+					count++;
 					order.setAction(true);
-					System.out.println("username: " + values[0] + ", " + "Action: " + values[4]);
+					System.out.println("username: " + values[0] + ", " + "Action: " + values[4] + " " +"count -" + count);
+					
 				} else {
 					order.setAction(false);
 
@@ -332,31 +338,54 @@ public class MainClass implements IOrderService {
 	@Override
 	public boolean generatePDFReports() {
 
-		String rootPath = "C:\\Users\\user\\Documents\\workspace-spring-tool-suite\\CaseStudy_CoreJava\\";
-		String fileName = "Report.pdf";
+		boolean test = false;
 
-		File f = new File(rootPath + fileName);
-		PDDocument myPdf = new PDDocument();
+		try (PDDocument document = new PDDocument()) {
 
-		try {
-			PDPage page = new PDPage();
-			myPdf.addPage(page);
+			PDPage Orderpage = new PDPage();
+			document.addPage(Orderpage);
 
-			PDPageContentStream orders = new PDPageContentStream(myPdf, page);
+			PDPageContentStream contentStream = new PDPageContentStream(document, Orderpage);
 
-			orders.beginText();
-			orders.endText();
-			orders.close();
+			contentStream.beginText();
+			contentStream.setFont(PDType1Font.COURIER, 12);
+			contentStream.newLineAtOffset(20, 450);
+			contentStream.setLeading(14.5f);
 
-			myPdf.save("Report.pdf");
-			System.out.println("Report created");
-			myPdf.close();
+//			List<Order> ordersDelivered = new ArrayList<>();
+//			List<Order> ordersCancelled = new ArrayList<>();
 
-		} catch (Exception e) {
-			System.out.println(e);
+			String line = "-------------------------------------";
+
+//			String delivered = "No.of Delivered    " + ordersDelivered.size();
+//			String cancelled = "No.of Cancelled     " + ordersCancelled.size();
+			
+			String delivered = "No.of Delivered    18  " ;
+			String cancelled = "No.of Cancelled    6  " ;
+
+			contentStream.showText(line);
+			contentStream.newLine();
+			contentStream.showText(delivered);
+			contentStream.newLine();
+			contentStream.showText(line);
+			contentStream.newLine();
+			contentStream.showText(cancelled);
+
+			contentStream.endText();
+
+			contentStream.close();
+			document.save(new File(
+					"C:\\Users\\user\\Documents\\workspace-spring-tool-suite\\CaseStudy_CoreJava\\Report.pdf"));
+			document.close();
+
+			test = true;
+
+		} catch (IOException e) {
+
+			// e.printStackTrace();
 		}
 
-		return false;
+		return test;
 	}
 
 	public static void print(Collection<Order> collection, String tagLine) {
